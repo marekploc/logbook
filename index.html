@@ -241,7 +241,7 @@ details.import summary::-webkit-details-marker { display: none; }
   </div></div>
   <form id="addForm" autocomplete="off">
     <label><span class="mono">Task</span><input id="fTitle" maxlength="120" required placeholder="What has to happen"></label>
-    <label><span class="mono">Fixed date</span><input id="fDate" type="date" required></label>
+    <label><span class="mono">Date</span><input id="fDate" type="date" required></label>
     <label class="full"><span class="mono">Note (optional)</span><textarea id="fNote" maxlength="300" rows="1" placeholder="Who, where, what counts as done"></textarea></label>
     <div class="full form-foot">
       <p>A new task is planned: edit, commit or delete it freely. Three days before its date it becomes committed. Moving a committed date is allowed, and counted.</p>
@@ -277,7 +277,7 @@ details.import summary::-webkit-details-marker { display: none; }
         <label><span class="mono">Day 1 is</span><input id="iDay1" type="date"></label>
         <label><span class="mono">Add as</span><select id="iMode"><option value="planned">Planned (can move)</option><option value="committed">Committed</option></select></label>
       </div>
-      <label><span class="mono">List</span><textarea id="iText" rows="8" placeholder="Day 3; Send the brief to the lawyer; Cover e-mail attached&#10;2026-11-04; Confirm the engagement&#10;meet; Day 9; 10:00-10:30; Dr. Novak; Follow-up call"></textarea></label>
+      <label><span class="mono">List</span><textarea id="iText" rows="8"></textarea></label>
       <div class="imp-actions">
         <button type="button" id="iPreview">Preview</button>
         <button class="primary" id="iGo" type="button" disabled>Import</button>
@@ -343,7 +343,7 @@ details.import summary::-webkit-details-marker { display: none; }
     if (!next) {
       var w = el('div', 'what');
       w.appendChild(el('span', 'mono', 'Next date'));
-      w.appendChild(el('h2', null, list.length ? 'Nothing ahead.' : 'Nothing is fixed yet.'));
+      w.appendChild(el('h2', null, list.length ? 'Nothing ahead.' : 'Nothing planned yet.'));
       w.appendChild(el('p', null, list.length ? 'Every date so far is done or missed. Add the next one below.' : 'Add the first task and date below.'));
       box.appendChild(w);
     } else {
@@ -838,7 +838,7 @@ details.import summary::-webkit-details-marker { display: none; }
     });
     Promise.all(jobs).then(function () {
       lastImport = { ids: ids, at: now };
-      iOut.innerHTML = ''; iOut.appendChild(el('p', 'sum', 'Imported ' + items.length + ' items' + (committed ? ' as committed.' : ' as planned.') + ' You can undo this for 15 minutes.'));
+      iOut.innerHTML = ''; iOut.appendChild(el('p', 'sum', 'Imported ' + items.length + (items.length === 1 ? ' item' : ' items') + (committed ? ' as committed.' : ' as planned.') + ' You can undo this for 15 minutes.'));
       iUndo.hidden = false; iText.value = ''; parsed = []; iGo.textContent = 'Import';
     }).catch(function () {
       iOut.innerHTML = ''; iOut.appendChild(el('p', 'sum', 'Some items could not be saved. Check the rules (SETUP.md), then preview again. Items already saved stay; use Undo if needed.'));
