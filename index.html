@@ -1,0 +1,918 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0a">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Logbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+html { background: #0a0a0a; }
+body { margin: 0; }
+
+/* Layout: mirrors sqne.eu. Near-black field, one acid-lime accent, light Inter headlines with a grey second half, mono uppercase labels, square-cornered controls, "// 00" section eyebrows. Single dark look by choice. */
+:root {
+  --bg: #0a0a0a;
+  --surface: #111111;
+  --surface-2: #181818;
+  --ink: #f4f4f1;
+  --muted: #8d8d88;
+  --line: #232323;
+  --accent: #d6ff3d;
+  --accent-ink: #0a0a0a;
+  --ok: #f4f4f1;
+  --miss: #6f6f6a;
+  --today: #d6ff3d;
+  --meet: #a9b8d4;
+  --f-display: "Inter", system-ui, sans-serif;
+  --f-body: "Inter", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-weight: 300; font-size: 16px; line-height: 1.55; padding-inline: 20px; padding-block: 0 80px; }
+.wrap { max-width: 1040px; margin: 0 auto; display: grid; gap: 56px; }
+.mono { font-family: var(--f-mono); font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); font-weight: 400; }
+.eyebrow { font-family: var(--f-mono); font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); }
+
+.topbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-block: 28px; border-bottom: 1px solid var(--line); margin-inline: -20px; padding-inline: 20px; }
+.topbar-in { width: 100%; max-width: 1040px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+.logo { font-family: var(--f-mono); font-weight: 500; font-size: 15px; letter-spacing: .14em; text-transform: uppercase; display: flex; align-items: center; gap: 12px; }
+.logo i { width: 14px; height: 14px; background: var(--accent); display: inline-block; }
+.logo span { color: var(--muted); }
+.today-stamp { font-family: var(--f-mono); font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+.today-stamp b { color: var(--ink); font-weight: 500; }
+
+.intro { display: grid; gap: 24px; padding-top: 24px; }
+.tag { justify-self: start; font-family: var(--f-mono); font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); border: 1px solid var(--line); border-radius: 999px; padding: 7px 16px; }
+h1 { font-weight: 300; font-size: clamp(44px, 8.5vw, 96px); line-height: 1.02; letter-spacing: -.025em; margin: 0; max-width: 14ch; text-wrap: balance; }
+h1 em { font-style: normal; color: var(--muted); }
+.lede { max-width: 56ch; color: var(--muted); font-size: clamp(17px, 2.2vw, 22px); margin: 0; }
+
+.hero { border: 1px solid var(--line); background: var(--surface); padding: clamp(22px, 4vw, 44px); display: grid; grid-template-columns: auto 1fr; gap: 14px clamp(24px, 5vw, 64px); align-items: center; }
+.hero .count { font-weight: 300; font-size: clamp(104px, 22vw, 200px); line-height: .82; letter-spacing: -.04em; color: var(--accent); font-variant-numeric: tabular-nums; }
+.hero .count small { display: block; font-family: var(--f-mono); font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); margin-top: 18px; letter-spacing: .16em; font-weight: 400; }
+.hero .what { min-width: 0; display: grid; gap: 10px; }
+.hero h2 { font-weight: 300; font-size: clamp(28px, 5vw, 48px); line-height: 1.08; letter-spacing: -.02em; margin: 0; overflow-wrap: anywhere; }
+.hero p { margin: 0; color: var(--muted); overflow-wrap: anywhere; }
+.hero.empty { grid-template-columns: 1fr; }
+@media (max-width: 600px) { .hero { grid-template-columns: 1fr; } }
+
+.sec-head { display: grid; gap: 8px; margin-bottom: 20px; }
+.sec-head h2 { font-weight: 300; font-size: clamp(26px, 4vw, 40px); letter-spacing: -.02em; margin: 0; }
+
+.runway { border-top: 1px solid var(--line); padding-top: 28px; }
+.runway svg { width: 100%; height: auto; display: block; overflow: visible; }
+.runway .legend { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 10px; }
+.dot { display: inline-block; width: 9px; height: 9px; background: currentColor; margin-right: 8px; }
+
+.tally { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--line); }
+.tally div { padding: 20px 22px; border-right: 1px solid var(--line); }
+.tally div:last-child { border-right: none; }
+.tally b { display: block; font-weight: 300; font-size: clamp(44px, 8vw, 72px); line-height: 1; letter-spacing: -.03em; margin-top: 10px; font-variant-numeric: tabular-nums; }
+.tally .t-ok b { color: var(--ok); } .tally .t-miss b { color: var(--miss); } .tally .t-ahead b { color: var(--accent); }
+
+form { display: grid; grid-template-columns: 1fr 210px; gap: 16px; }
+form .full { grid-column: 1 / -1; }
+label { display: grid; gap: 8px; min-width: 0; }
+input, textarea { font: inherit; font-weight: 300; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 0; padding: 14px 16px; width: 100%; min-width: 0; color-scheme: dark; }
+input::placeholder, textarea::placeholder { color: #55554f; }
+textarea { resize: vertical; min-height: 52px; }
+input:focus-visible, textarea:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.form-foot { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+.form-foot p { margin: 0; color: var(--muted); font-size: 14px; flex: 1 1 280px; max-width: 60ch; }
+button { font-family: var(--f-mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; cursor: pointer; border-radius: 0; border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 12px 18px; }
+button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 500; padding: 18px 32px; }
+button.primary:hover { filter: brightness(1.08); }
+button:disabled { opacity: .45; cursor: not-allowed; }
+.err { color: var(--ink); font-size: 14px; min-height: 18px; margin: 0; }
+@media (max-width: 600px) { form { grid-template-columns: 1fr; } .tally div { padding: 16px 14px; } }
+
+section.group { display: grid; gap: 0; }
+section.group > .mono { display: flex; justify-content: space-between; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+.row { display: grid; grid-template-columns: 92px 1fr auto; gap: 10px 24px; align-items: center; border-bottom: 1px solid var(--line); padding: 22px 0; position: relative; }
+.row::before { content: ""; position: absolute; left: -20px; top: 22px; bottom: 22px; width: 3px; background: var(--line); }
+.row.s-ahead::before { background: var(--accent); }
+.row.s-today::before { background: var(--today); }
+.row.s-done::before { background: var(--ok); }
+.row.s-miss::before { background: var(--miss); }
+.date { text-align: left; }
+.date .d { font-weight: 300; font-size: 56px; line-height: .95; letter-spacing: -.04em; display: block; font-variant-numeric: tabular-nums; }
+.date .m { font-family: var(--f-mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); display: block; margin-top: 8px; }
+.body { min-width: 0; }
+.body h3 { margin: 0; font-weight: 400; font-size: 20px; letter-spacing: -.01em; overflow-wrap: anywhere; }
+.body p { margin: 4px 0 0; color: var(--muted); font-size: 15px; overflow-wrap: anywhere; }
+.meta { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+.chip { font-family: var(--f-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; padding: 5px 10px; border: 1px solid currentColor; white-space: nowrap; }
+.s-ahead .chip { color: var(--accent); } .s-today .chip { color: var(--accent-ink); background: var(--accent); border-color: var(--accent); } .s-done .chip { color: var(--ok); } .s-miss .chip { color: var(--miss); }
+.row.s-miss .body h3 { color: var(--muted); text-decoration: line-through; text-decoration-thickness: 1px; text-decoration-color: var(--muted); }
+.row.s-miss .date .d { color: var(--miss); }
+.link { background: none; border: none; padding: 0; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; font-size: 11px; }
+.link.confirm { color: var(--accent); font-weight: 500; }
+@media (max-width: 600px) { .row { grid-template-columns: 70px 1fr; } .row::before { left: -20px; } .meta { grid-column: 1 / -1; flex-direction: row; justify-content: space-between; align-items: center; } .date .d { font-size: 44px; } }
+.lists { display: grid; gap: 56px; }
+footer { border-top: 1px solid var(--line); padding-top: 24px; }
+
+
+.views { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 28px; }
+.seg { display: inline-flex; border: 1px solid var(--line); }
+.seg button { border: none; border-right: 1px solid var(--line); background: transparent; color: var(--muted); padding: 12px 22px; }
+.seg button:last-child { border-right: none; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); font-weight: 500; }
+.cal-nav { display: flex; align-items: center; gap: 8px; }
+.cal-nav .ttl { font-weight: 300; font-size: clamp(22px, 4vw, 34px); letter-spacing: -.02em; min-width: 9ch; text-align: center; padding-inline: 8px; }
+.cal-nav button { padding: 10px 14px; }
+.grid7 { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
+.grid7 > * { border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.wd { padding: 10px 8px; font-family: var(--f-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.cell { display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; gap: 6px; min-height: clamp(58px, 11vw, 104px); padding: 8px; background: transparent; border-radius: 0; text-align: left; color: var(--ink); letter-spacing: 0; text-transform: none; font-family: var(--f-body); font-size: 15px; font-weight: 300; }
+.cell:hover { background: var(--surface); }
+.cell.out { color: #55554f; }
+.cell.past:not(.has) { color: #55554f; }
+.cell.isToday { box-shadow: inset 0 0 0 1px var(--ink); }
+.cell.sel { background: var(--surface-2); box-shadow: inset 0 0 0 2px var(--accent); }
+.cell .n { font-variant-numeric: tabular-nums; }
+.cell .dots { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+.cell .dots i { width: 8px; height: 8px; display: inline-block; }
+.cell .dots em { font-style: normal; font-family: var(--f-mono); font-size: 10px; color: var(--muted); }
+.dayhead { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; padding: 28px 0 14px; border-bottom: 1px solid var(--line); }
+.dayhead h3 { margin: 0; font-weight: 300; font-size: clamp(22px, 4vw, 32px); letter-spacing: -.02em; }
+.empty-day { color: var(--muted); margin: 18px 0 0; }
+.s-meet::before { background: var(--meet) !important; }
+.row.s-meet .chip { color: var(--meet); }
+.row.s-mpast::before { background: var(--line) !important; }
+.row.s-mpast .body h3, .row.s-mpast .date .d { color: var(--muted); }
+.row.s-mpast .chip { color: var(--miss); }
+.kind { display: flex; margin-bottom: 20px; }
+.kind .seg button { padding: 11px 22px; }
+#meetForm[hidden], #addForm[hidden] { display: none !important; }
+#meetForm { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+#meetForm .full { grid-column: 1 / -1; }
+.times { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; grid-column: 1 / -1; }
+@media (max-width: 600px) { #meetForm { grid-template-columns: 1fr; } .times { grid-template-columns: 1fr 1fr; } .times label:first-child { grid-column: 1 / -1; } }
+#month[hidden], #lists[hidden], .cal-nav[hidden] { display: none !important; }
+@media (max-width: 600px) { .seg button { padding: 11px 16px; } .cell { padding: 6px; font-size: 14px; } }
+
+.gate { max-width: 1040px; margin: 0 auto; padding-block: 80px; display: grid; gap: 28px; justify-items: start; }
+#app[hidden], .gate[hidden] { display: none !important; }
+
+/* Logbook additions */
+.tally { grid-template-columns: repeat(4, 1fr); }
+.tally .t-moved b { color: var(--meet); }
+select { font: inherit; font-weight: 300; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 0; padding: 14px 16px; width: 100%; }
+select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.editbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; border: 1px solid var(--accent); padding: 12px 16px; margin-bottom: 16px; }
+.editbar[hidden] { display: none !important; }
+.row.planned::before { background: transparent !important; border-left: 3px dashed var(--accent); width: 0; }
+.chip.planned { border-style: dashed; color: var(--muted); }
+.chip.moved { color: var(--meet); }
+.meta .links { display: flex; gap: 14px; flex-wrap: wrap; justify-content: flex-end; }
+details.import { border: 1px solid var(--line); background: var(--surface); }
+details.import summary { cursor: pointer; padding: 18px 20px; list-style: none; color: var(--accent); }
+details.import summary::-webkit-details-marker { display: none; }
+.imp-body { display: grid; gap: 16px; padding: 4px 20px 22px; }
+.imp-body label { display: grid; gap: 8px; }
+.imp-help { margin: 0; color: var(--muted); font-size: 14px; }
+.imp-help code { font-family: var(--f-mono); font-size: 12px; color: var(--ink); }
+.imp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.imp-actions { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.imp-actions .primary { padding: 14px 26px; }
+.imp-out { font-size: 14px; }
+.imp-out table { width: 100%; border-collapse: collapse; }
+.imp-out td, .imp-out th { text-align: left; padding: 6px 10px 6px 0; border-bottom: 1px solid var(--line); vertical-align: top; overflow-wrap: anywhere; }
+.imp-out th { font-family: var(--f-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 400; }
+.imp-out .bad td { color: var(--miss); }
+.imp-out .sum { margin: 0 0 10px; }
+@media (max-width: 600px) { .imp-row { grid-template-columns: 1fr; } .tally b { font-size: 36px; } .tally div { padding: 14px 10px; } }
+</style>
+</head>
+<body>
+<div id="gate" class="gate">
+  <div class="logo"><i></i>LOGBOOK <span>//</span> PLAN &amp; KEEP</div>
+  <h1>Plan it. <em>Then keep it.</em></h1>
+  <p class="lede">Sign in to open your list.</p>
+  <button class="primary" id="signIn" type="button">Sign in with Google</button>
+  <p class="err" id="gateErr" role="alert"></p>
+</div>
+<div id="app" hidden>
+<div class="topbar"><div class="topbar-in">
+  <div class="logo"><i></i>LOGBOOK <span>//</span> PLAN &amp; KEEP</div>
+  <div class="today-stamp">Today · <b id="todayStamp"></b> · <button class="link" id="signOut" type="button">Sign out</button></div>
+</div></div>
+<div class="wrap">
+  <div class="intro">
+    <div class="tag">[ PLANNED DATES MOVE. COMMITTED DATES STAY ]</div>
+    <h1>Plan it. <em>Then keep it.</em></h1>
+    <p class="lede">A planned date can be changed freely. Three days before it arrives it becomes committed: done on or before that day, or missed. A committed date can still be moved, but every move is counted and shown.</p>
+  </div>
+
+  <div id="hero"></div>
+
+  <div class="runway">
+    <div class="sec-head"><span class="eyebrow">// 00 Runway</span><h2>Thirty days back, one hundred twenty ahead</h2></div>
+    <svg id="runway" viewBox="0 0 1000 96" role="img" aria-label="Timeline of fixed dates around today"></svg>
+    <div class="legend mono">
+      <span style="color:var(--accent)"><i class="dot"></i>Ahead</span>
+      <span style="color:var(--today)"><i class="dot"></i>Today</span>
+      <span style="color:var(--ok)"><i class="dot"></i>Done</span>
+      <span style="color:var(--miss)"><i class="dot"></i>Missed</span>
+      <span id="runwayNote" style="margin-left:auto"></span>
+    </div>
+  </div>
+
+  <div class="tally">
+    <div class="t-ahead"><span class="mono">Ahead</span><b id="nAhead">0</b></div>
+    <div class="t-ok"><span class="mono">Done</span><b id="nDone">0</b></div>
+    <div class="t-miss"><span class="mono">Missed</span><b id="nMiss">0</b></div>
+    <div class="t-moved"><span class="mono">Moved</span><b id="nMoved">0</b></div>
+  </div>
+
+  <div>
+    <div class="sec-head"><span class="eyebrow">// 01 Plan</span><h2>Add a task or meeting</h2></div>
+  <div class="editbar" id="editBar" hidden><span class="mono" id="editLabel"></span><button class="link" type="button" id="editCancel">Cancel</button></div>
+  <div class="kind"><div class="seg" role="group" aria-label="What to add">
+    <button type="button" id="kTask" aria-pressed="true">Task</button>
+    <button type="button" id="kMeet" aria-pressed="false">Meeting</button>
+  </div></div>
+  <form id="addForm" autocomplete="off">
+    <label><span class="mono">Task</span><input id="fTitle" maxlength="120" required placeholder="What has to happen"></label>
+    <label><span class="mono">Fixed date</span><input id="fDate" type="date" required></label>
+    <label class="full"><span class="mono">Note (optional)</span><textarea id="fNote" maxlength="300" rows="1" placeholder="Who, where, what counts as done"></textarea></label>
+    <div class="full form-foot">
+      <p>A new task is planned: edit, commit or delete it freely. Three days before its date it becomes committed. Moving a committed date is allowed, and counted.</p>
+      <button class="primary" id="fSubmit" type="submit">Add as planned</button>
+    </div>
+    <p class="err full" id="fErr" role="alert"></p>
+  </form>
+  <form id="meetForm" autocomplete="off" hidden>
+    <label><span class="mono">With whom</span><input id="mWith" maxlength="120" required placeholder="Person or people"></label>
+    <label><span class="mono">Subject (optional)</span><input id="mTopic" maxlength="120" placeholder="What it is about"></label>
+    <div class="times">
+      <label><span class="mono">Date</span><input id="mDate" type="date" required></label>
+      <label><span class="mono">From</span><input id="mFrom" type="time" required></label>
+      <label><span class="mono">To</span><input id="mTo" type="time" required></label>
+    </div>
+    <label class="full"><span class="mono">Where (optional)</span><input id="mPlace" maxlength="120" placeholder="Place or link"></label>
+    <div class="full form-foot">
+      <p>Meetings can be edited or cancelled at any time.</p>
+      <button class="primary" id="mSubmit" type="submit">Add meeting</button>
+    </div>
+    <p class="err full" id="mErr" role="alert"></p>
+  </form>
+
+  </div>
+
+  <details id="importBox" class="import">
+    <summary class="mono">// 02 Import a list</summary>
+    <div class="imp-body">
+      <p class="imp-help">One item per line, separated by semicolons (or tabs, if pasted from a spreadsheet).<br>
+      Task: <code>date; title; note</code> &nbsp; Meeting: <code>meet; date; 10:00-10:30; person; topic; place</code><br>
+      A date is <code>2026-11-04</code>, <code>4.11.2026</code> or <code>Day 12</code> (counted from the Day 1 date below). Lines starting with # are ignored.</p>
+      <div class="imp-row">
+        <label><span class="mono">Day 1 is</span><input id="iDay1" type="date"></label>
+        <label><span class="mono">Add as</span><select id="iMode"><option value="planned">Planned (can move)</option><option value="committed">Committed</option></select></label>
+      </div>
+      <label><span class="mono">List</span><textarea id="iText" rows="8" placeholder="Day 3; Send the brief to the lawyer; Cover e-mail attached&#10;2026-11-04; Confirm the engagement&#10;meet; Day 9; 10:00-10:30; Dr. Novak; Follow-up call"></textarea></label>
+      <div class="imp-actions">
+        <button type="button" id="iPreview">Preview</button>
+        <button class="primary" id="iGo" type="button" disabled>Import</button>
+        <button class="link" id="iUndo" type="button" hidden>Undo this import</button>
+      </div>
+      <div id="iOut" class="imp-out"></div>
+    </div>
+  </details>
+
+  <div>
+    <div class="sec-head"><span class="eyebrow">// 03 Calendar</span><h2>Your dates</h2></div>
+    <div class="views">
+      <div class="seg" role="group" aria-label="View">
+        <button type="button" id="vSchedule" aria-pressed="true">Schedule</button>
+        <button type="button" id="vMonth" aria-pressed="false">Month</button>
+      </div>
+      <div class="cal-nav" id="calNav" hidden>
+        <button type="button" id="mPrev" aria-label="Previous month">&larr;</button>
+        <span class="ttl" id="mTitle"></span>
+        <button type="button" id="mNext" aria-label="Next month">&rarr;</button>
+        <button type="button" id="mToday">Today</button>
+      </div>
+    </div>
+    <div id="lists" class="lists"></div>
+    <div id="month" hidden></div>
+  </div>
+</div>
+
+</div>
+<script>
+(function () {
+  var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var TYPO_MS = 15 * 60 * 1000, COMMIT_DAYS = 3;
+  var db = null, tasks = [], meetings = [], armed = null, saving = false, editing = null, moveArmed = false, autoDone = {}, lastImport = null;
+  var view = 'schedule', kind = 'task', selDay = null, mY = null, mM = null;
+  try { if (localStorage.getItem('lb-view') === 'month') view = 'month'; } catch (e) {}
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+  function ymd(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function parse(s) { var p = s.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2]); }
+  function today() { return ymd(new Date()); }
+  function diff(a, b) { return Math.round((parse(b) - parse(a)) / 86400000); }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); }
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function longDate(s) { var d = parse(s); return DAYS[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear(); }
+
+  function isCommitted(t, now) { return t.committed !== false || diff(now, t.date) <= COMMIT_DAYS; }
+
+  function status(t, now) {
+    if (t.done) return 'done';
+    if (t.date < now) return 'miss';
+    if (t.date === now) return 'today';
+    return 'ahead';
+  }
+
+  function renderHero(list, now) {
+    var host = document.getElementById('hero');
+    host.innerHTML = '';
+    var next = list.filter(function (t) { return t.st === 'today' || t.st === 'ahead'; })
+      .sort(function (a, b) { return a.date < b.date ? -1 : 1; })[0];
+    var box = el('div', 'hero' + (next ? '' : ' empty'));
+    if (!next) {
+      var w = el('div', 'what');
+      w.appendChild(el('span', 'mono', 'Next date'));
+      w.appendChild(el('h2', null, list.length ? 'Nothing ahead.' : 'Nothing is fixed yet.'));
+      w.appendChild(el('p', null, list.length ? 'Every date so far is done or missed. Add the next one below.' : 'Add the first task and date below.'));
+      box.appendChild(w);
+    } else {
+      var n = diff(now, next.date);
+      var c = el('div', 'count', n === 0 ? '0' : String(n));
+      c.appendChild(el('small', null, n === 0 ? 'Today' : (n === 1 ? 'Day left' : 'Days left')));
+      var w2 = el('div', 'what');
+      w2.appendChild(el('span', 'mono', 'Next date · ' + longDate(next.date) + ' · ' + (next.cm ? 'committed' : 'planned, can still move')));
+      w2.appendChild(el('h2', null, next.title));
+      if (next.note) w2.appendChild(el('p', null, next.note));
+      box.appendChild(c); box.appendChild(w2);
+    }
+    host.appendChild(box);
+  }
+
+  function renderRunway(list, now) {
+    var svg = document.getElementById('runway');
+    var BACK = 30, FWD = 120, L = 20, R = 980, Y = 44;
+    function x(offset) { return L + ((offset + BACK) / (BACK + FWD)) * (R - L); }
+    var cs = getComputedStyle(document.documentElement);
+    var out = '';
+    out += '<line x1="' + L + '" y1="' + Y + '" x2="' + R + '" y2="' + Y + '" stroke="var(--line)" stroke-width="2"/>';
+    var base = parse(now);
+    for (var i = -BACK; i <= FWD; i++) {
+      var d = new Date(base.getFullYear(), base.getMonth(), base.getDate() + i);
+      if (d.getDate() === 1) {
+        out += '<line x1="' + x(i) + '" y1="' + (Y - 8) + '" x2="' + x(i) + '" y2="' + (Y + 8) + '" stroke="var(--muted)" stroke-width="1"/>';
+        out += '<text x="' + x(i) + '" y="' + (Y + 28) + '" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" fill="var(--muted)">' + MONTHS[d.getMonth()].toUpperCase() + '</text>';
+      }
+    }
+    out += '<line x1="' + x(0) + '" y1="10" x2="' + x(0) + '" y2="80" stroke="var(--ink)" stroke-width="2"/>';
+    out += '<text x="' + x(0) + '" y="8" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" fill="var(--ink)">TODAY</text>';
+    var colors = { ahead: 'var(--accent)', today: 'var(--today)', done: 'var(--ok)', miss: 'var(--miss)' };
+    var inView = 0;
+    list.forEach(function (t) {
+      var o = diff(now, t.date);
+      if (o < -BACK || o > FWD) return;
+      inView++;
+      var cx = x(o);
+      out += '<g><title>' + esc(t.title) + ' · ' + esc(longDate(t.date)) + '</title>' +
+        '<line x1="' + cx + '" y1="' + (Y - 18) + '" x2="' + cx + '" y2="' + Y + '" stroke="' + colors[t.st] + '" stroke-width="2"/>' +
+        '<circle cx="' + cx + '" cy="' + (Y - 20) + '" r="7" fill="' + colors[t.st] + '" fill-opacity="' + (t.cm ? 1 : 0.45) + '" stroke="var(--surface)" stroke-width="2"/></g>';
+    });
+    svg.innerHTML = out;
+    document.getElementById('runwayNote').textContent = inView + ' in view';
+  }
+
+  function makeMeetRow(t, now) {
+    var row = el('div', 'row s-meet' + (t.st === 'mpast' ? ' s-mpast' : ''));
+    var d = parse(t.date);
+    var date = el('div', 'date');
+    date.appendChild(el('span', 'd', String(d.getDate())));
+    date.appendChild(el('span', 'm', MONTHS[d.getMonth()] + ' ' + d.getFullYear()));
+    var body = el('div', 'body');
+    body.appendChild(el('h3', null, t.person));
+    var sub = DAYS[d.getDay()] + (t.topic ? ' \u00b7 ' + t.topic : '') + (t.place ? ' \u00b7 ' + t.place : '');
+    body.appendChild(el('p', null, sub));
+    var meta = el('div', 'meta');
+    meta.appendChild(el('span', 'chip', t.start + '\u2013' + t.end));
+    if (t.st !== 'mpast') {
+      var ml = el('div', 'links');
+      var eb = el('button', 'link', 'Edit'); eb.type = 'button';
+      eb.addEventListener('click', function () { startEdit(t); });
+      ml.appendChild(eb);
+      var b = el('button', 'link' + (armed === t.id ? ' confirm' : ''), armed === t.id ? 'Confirm: cancel it' : 'Cancel meeting');
+      b.type = 'button';
+      b.addEventListener('click', function () { onCancel(t); });
+      ml.appendChild(b);
+      meta.appendChild(ml);
+    }
+    row.appendChild(date); row.appendChild(body); row.appendChild(meta);
+    return row;
+  }
+
+  function makeRow(t, now) {
+    if (t.kind === 'meet') return makeMeetRow(t, now);
+    var row = el('div', 'row s-' + t.st + (t.cm || t.st === 'done' || t.st === 'miss' ? '' : ' planned'));
+    var d = parse(t.date);
+    var date = el('div', 'date');
+    date.appendChild(el('span', 'd', String(d.getDate())));
+    date.appendChild(el('span', 'm', MONTHS[d.getMonth()] + ' ' + d.getFullYear()));
+    var body = el('div', 'body');
+    body.appendChild(el('h3', null, t.title));
+    var sub = DAYS[d.getDay()] + (t.note ? ' · ' + t.note : '');
+    body.appendChild(el('p', null, sub));
+    var meta = el('div', 'meta');
+    var n = diff(now, t.date);
+    var label;
+    if (t.st === 'done') label = 'Done ' + (t.doneOn === t.date ? 'on the day' : (diff(t.doneOn, t.date) + ' d early'));
+    else if (t.st === 'miss') label = 'Missed · ' + Math.abs(n) + ' d ago';
+    else if (t.st === 'today') label = 'Due today';
+    else label = 'In ' + n + (n === 1 ? ' day' : ' days');
+    meta.appendChild(el('span', 'chip', label));
+    var isOpen = (t.st === 'today' || t.st === 'ahead');
+    if (isOpen) meta.appendChild(el('span', 'chip ' + (t.cm ? 'moved' : 'planned'), t.cm ? 'Committed' : 'Planned'));
+    if (t.moves) meta.appendChild(el('span', 'chip moved', 'Moved \u00d7' + t.moves));
+    var ls = el('div', 'links');
+    function link(text, armKey, confirmText, fn) {
+      var b = el('button', 'link' + (armKey && armed === armKey ? ' confirm' : ''), armKey && armed === armKey ? confirmText : text);
+      b.type = 'button'; b.addEventListener('click', fn); ls.appendChild(b);
+    }
+    if (isOpen) {
+      link('Mark done', t.id, 'Confirm: it is done', function () { onDone(t); });
+      if (t.cm) link('Reschedule', null, '', function () { startMove(t); });
+      else {
+        link('Edit', null, '', function () { startEdit(t); });
+        link('Commit now', t.id + ':c', 'Confirm: commit', function () { onCommit(t); });
+        link('Delete', t.id + ':d', 'Confirm: delete', function () { onDelete(t); });
+      }
+    }
+    if (t.cm && t.createdAt && Date.now() - t.createdAt < TYPO_MS && isOpen) {
+      link('Remove (typo)', null, '', function () { onRemove(t); });
+    }
+    if (ls.childNodes.length) meta.appendChild(ls);
+    row.appendChild(date); row.appendChild(body); row.appendChild(meta);
+    return row;
+  }
+
+  function group(title, items, now) {
+    if (!items.length) return null;
+    var s = el('section', 'group');
+    var h = el('div', 'mono'); h.appendChild(el('span', null, title)); h.appendChild(el('span', null, String(items.length)));
+    s.appendChild(h);
+    items.forEach(function (t) { s.appendChild(makeRow(t, now)); });
+    return s;
+  }
+
+  function render() {
+    var now = today();
+    document.getElementById('todayStamp').textContent = longDate(now);
+    var list = tasks.map(function (t) { var c = Object.assign({}, t); c.st = status(t, now); c.kind = 'task'; c.cm = isCommitted(t, now); return c; });
+    var nowT = pad(new Date().getHours()) + ':' + pad(new Date().getMinutes());
+    var mlist = meetings.map(function (m) {
+      var c = Object.assign({}, m); c.kind = 'meet';
+      c.st = (m.date < now || (m.date === now && m.end <= nowT)) ? 'mpast' : (m.date === now ? 'mtoday' : 'mahead');
+      return c;
+    });
+    var all = list.concat(mlist);
+    if (db) list.forEach(function (t) {
+      if (t.committed === false && !t.done && t.date >= now && diff(now, t.date) <= COMMIT_DAYS && !autoDone[t.id]) {
+        autoDone[t.id] = 1;
+        db.collection('tasks').doc(t.id).update({ committed: true }).catch(function () { delete autoDone[t.id]; });
+      }
+    });
+    renderHero(list, now);
+    renderRunway(list, now);
+    var by = function (s) { return list.filter(function (t) { return t.st === s; }); };
+    var asc = function (a, b) { var x = a.date + (a.start || ''), y = b.date + (b.start || ''); return x < y ? -1 : x > y ? 1 : 0; };
+    var desc = function (a, b) { return asc(b, a); };
+    var byAll = function (s) { return all.filter(function (t) { return t.st === s; }); };
+    document.getElementById('nAhead').textContent = by('ahead').length + by('today').length;
+    document.getElementById('nDone').textContent = by('done').length;
+    document.getElementById('nMiss').textContent = by('miss').length;
+    document.getElementById('nMoved').textContent = list.reduce(function (n, t) { return n + (t.moves || 0); }, 0);
+    var host = document.getElementById('lists');
+    host.innerHTML = '';
+    var weeks = {}, order = [];
+    byAll('ahead').concat(byAll('mahead')).sort(asc).forEach(function (t) {
+      var k = weekStart(t.date);
+      if (!weeks[k]) { weeks[k] = []; order.push(k); }
+      weeks[k].push(t);
+    });
+    var groups = [group('Today', by('today').concat(byAll('mtoday')).sort(asc), now)];
+    order.forEach(function (k) { groups.push(group(weekLabel(k, now), weeks[k], now)); });
+    groups.push(group('Done', by('done').sort(desc), now), group('Missed', by('miss').sort(desc), now), group('Past meetings', byAll('mpast').sort(desc), now));
+    groups.forEach(function (g) { if (g) host.appendChild(g); });
+    renderMonth(all, now);
+    applyView();
+  }
+
+  function weekStart(s) { var d = parse(s); d.setDate(d.getDate() - d.getDay()); return ymd(d); }
+  function weekLabel(k, now) {
+    var a = parse(k), b = parse(k); b.setDate(b.getDate() + 6);
+    var range = a.getDate() + (a.getMonth() !== b.getMonth() ? ' ' + MONTHS[a.getMonth()] : '') + ' \u2013 ' + b.getDate() + ' ' + MONTHS[b.getMonth()];
+    var diffW = Math.round(diff(weekStart(now), k) / 7);
+    var name = diffW === 0 ? 'This week' : diffW === 1 ? 'Next week' : diffW === -1 ? 'Last week' : 'Week of ' + a.getDate() + ' ' + MONTHS[a.getMonth()];
+    return diffW >= -1 && diffW <= 1 ? name + ' \u00b7 ' + range : name;
+  }
+
+  function applyView() {
+    var m = view === 'month';
+    document.getElementById('lists').hidden = m;
+    document.getElementById('month').hidden = !m;
+    document.getElementById('calNav').hidden = !m;
+    document.getElementById('vSchedule').setAttribute('aria-pressed', String(!m));
+    document.getElementById('vMonth').setAttribute('aria-pressed', String(m));
+  }
+
+  function renderMonth(list, now) {
+    var host = document.getElementById('month');
+    host.innerHTML = '';
+    if (mY === null) { var t0 = parse(now); mY = t0.getFullYear(); mM = t0.getMonth(); }
+    if (!selDay) selDay = now;
+    var FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    document.getElementById('mTitle').textContent = FULL[mM] + ' ' + mY;
+    var byDay = {};
+    list.forEach(function (t) { (byDay[t.date] = byDay[t.date] || []).push(t); });
+    var colors = { ahead: 'var(--accent)', today: 'var(--today)', done: 'var(--ok)', miss: 'var(--miss)', mahead: 'var(--meet)', mtoday: 'var(--meet)', mpast: 'var(--miss)' };
+    var grid = el('div', 'grid7');
+    ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(function (n) { grid.appendChild(el('div', 'wd', n)); });
+    var lead = new Date(mY, mM, 1).getDay();
+    var dim = new Date(mY, mM + 1, 0).getDate();
+    var total = Math.ceil((lead + dim) / 7) * 7;
+    for (var i = 0; i < total; i++) {
+      var d = new Date(mY, mM, 1 - lead + i), key = ymd(d), items = byDay[key] || [];
+      var c = el('button', 'cell' + (d.getMonth() !== mM ? ' out' : '') + (key < now ? ' past' : '') + (key === now ? ' isToday' : '') + (key === selDay ? ' sel' : '') + (items.length ? ' has' : ''));
+      c.type = 'button';
+      c.setAttribute('aria-label', longDate(key) + (items.length ? ', ' + items.length + (items.length === 1 ? ' task' : ' tasks') : ''));
+      c.appendChild(el('span', 'n', String(d.getDate())));
+      var dots = el('span', 'dots');
+      items.slice(0, 3).forEach(function (t) { var dot = el('i'); dot.style.background = colors[t.st]; if (t.kind === 'meet') dot.style.borderRadius = '50%'; if (t.kind === 'task' && !t.cm) dot.style.opacity = '.45'; dots.appendChild(dot); });
+      if (items.length > 3) dots.appendChild(el('em', null, '+' + (items.length - 3)));
+      c.appendChild(dots);
+      (function (k) { c.addEventListener('click', function () { selDay = k; render(); }); })(key);
+      grid.appendChild(c);
+    }
+    host.appendChild(grid);
+    var head = el('div', 'dayhead');
+    head.appendChild(el('h3', null, longDate(selDay)));
+    if (selDay >= now) {
+      var add = el('button', null, 'Add on this date'); add.type = 'button';
+      add.addEventListener('click', function () {
+        dateInput.value = selDay; document.getElementById('mDate').value = selDay;
+        var f = document.getElementById(kind === 'meet' ? 'mWith' : 'fTitle');
+        f.scrollIntoView({ behavior: 'smooth', block: 'center' }); f.focus({ preventScroll: true });
+      });
+      head.appendChild(add);
+    }
+    host.appendChild(head);
+    var sel = (byDay[selDay] || []).slice().sort(function (a, b) { return (a.start || '') < (b.start || '') ? -1 : 1; });
+    if (!sel.length) host.appendChild(el('p', 'empty-day', selDay < now ? 'Nothing was fixed for this day.' : 'Nothing fixed for this day.'));
+    sel.forEach(function (t) { host.appendChild(makeRow(t, now)); });
+  }
+
+  function onDone(t) {
+    if (!db) return;
+    if (armed !== t.id) { armed = t.id; render(); setTimeout(function () { if (armed === t.id) { armed = null; render(); } }, 5000); return; }
+    armed = null;
+    var now = today();
+    if (t.date < now) { render(); return; }
+    db.collection('tasks').doc(t.id).update({ done: true, doneOn: now }).catch(function () {});
+  }
+  function onCancel(t) {
+    if (!db) return;
+    if (armed !== t.id) { armed = t.id; render(); setTimeout(function () { if (armed === t.id) { armed = null; render(); } }, 5000); return; }
+    armed = null;
+    db.collection('meetings').doc(t.id).delete().catch(function () {});
+  }
+  function onCommit(t) {
+    if (!db) return;
+    var k = t.id + ':c';
+    if (armed !== k) { armed = k; render(); setTimeout(function () { if (armed === k) { armed = null; render(); } }, 5000); return; }
+    armed = null;
+    db.collection('tasks').doc(t.id).update({ committed: true }).catch(function () {});
+  }
+  function onDelete(t) {
+    if (!db) return;
+    var k = t.id + ':d';
+    if (armed !== k) { armed = k; render(); setTimeout(function () { if (armed === k) { armed = null; render(); } }, 5000); return; }
+    armed = null;
+    db.collection('tasks').doc(t.id).delete().catch(function () {});
+  }
+  function setEditBar() {
+    var bar = document.getElementById('editBar');
+    var fs = document.getElementById('fSubmit'), ms = document.getElementById('mSubmit');
+    if (!editing) { bar.hidden = true; fs.textContent = 'Add as planned'; ms.textContent = 'Add meeting'; return; }
+    bar.hidden = false;
+    document.getElementById('editLabel').textContent = editing.kind === 'meet' ? 'Editing a meeting'
+      : (editing.mode === 'move' ? 'Moving a committed date (counted)' : 'Editing a planned task');
+    fs.textContent = editing.mode === 'move' ? 'Move the date' : 'Save changes';
+    ms.textContent = 'Save changes';
+  }
+  function cancelEdit() {
+    editing = null; moveArmed = false;
+    form.reset(); mForm.reset(); setMin();
+    document.getElementById('fTitle').disabled = false; document.getElementById('fNote').disabled = false;
+    err.textContent = ''; mErr.textContent = '';
+    setEditBar();
+  }
+  function startEdit(t) {
+    cancelEdit();
+    if (t.kind === 'meet') {
+      editing = { kind: 'meet', id: t.id };
+      setKind('meet');
+      document.getElementById('mWith').value = t.person; document.getElementById('mTopic').value = t.topic || '';
+      mDate.value = t.date; document.getElementById('mFrom').value = t.start; document.getElementById('mTo').value = t.end;
+      document.getElementById('mPlace').value = t.place || '';
+      document.getElementById('mWith').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      editing = { kind: 'task', id: t.id, mode: 'edit' };
+      setKind('task');
+      document.getElementById('fTitle').value = t.title; dateInput.value = t.date; document.getElementById('fNote').value = t.note || '';
+      document.getElementById('fTitle').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    setEditBar();
+  }
+  function startMove(t) {
+    cancelEdit();
+    editing = { kind: 'task', id: t.id, mode: 'move', from: t.date, moves: t.moves || 0 };
+    setKind('task');
+    document.getElementById('fTitle').value = t.title; document.getElementById('fTitle').disabled = true;
+    document.getElementById('fNote').value = t.note || ''; document.getElementById('fNote').disabled = true;
+    dateInput.value = t.date;
+    dateInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setEditBar();
+  }
+  function onRemove(t) {
+    if (!db) return;
+    if (!t.createdAt || Date.now() - t.createdAt >= TYPO_MS) { render(); return; }
+    db.collection('tasks').doc(t.id).delete().catch(function () {});
+  }
+
+  var form = document.getElementById('addForm'), err = document.getElementById('fErr');
+  var dateInput = document.getElementById('fDate');
+  function setMin() { dateInput.min = today(); var m = document.getElementById('mDate'); if (m) m.min = today(); }
+  setMin();
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    err.textContent = '';
+    if (!db) { err.textContent = 'Saving is not available in this view.'; return; }
+    var title = document.getElementById('fTitle').value.trim();
+    var date = dateInput.value;
+    var note = document.getElementById('fNote').value.trim();
+    if (!title) { err.textContent = 'Give the task a name.'; return; }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) { err.textContent = 'Pick a date.'; return; }
+    if (date < today()) { err.textContent = 'A date cannot be in the past.'; return; }
+    if (saving) return;
+    if (editing && editing.kind === 'task') {
+      var upd;
+      if (editing.mode === 'move') {
+        if (date === editing.from) { err.textContent = 'Pick a different date.'; return; }
+        if (!moveArmed) {
+          moveArmed = true;
+          err.textContent = 'This date is committed. Moving it is counted. Press the button again to confirm.';
+          document.getElementById('fSubmit').textContent = 'Confirm: move it';
+          return;
+        }
+        upd = { date: date, moves: editing.moves + 1, movedFrom: editing.from };
+      } else {
+        upd = { title: title, date: date, note: note };
+      }
+      saving = true;
+      db.collection('tasks').doc(editing.id).update(upd)
+        .then(function () { cancelEdit(); })
+        .catch(function () { err.textContent = 'Could not save. Check the rules (SETUP.md) and try again.'; })
+        .then(function () { saving = false; });
+      return;
+    }
+    saving = true;
+    var id = 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    db.collection('tasks').doc(id).set({ title: title, date: date, note: note, done: false, committed: false, moves: 0, createdAt: Date.now() })
+      .then(function () { form.reset(); setMin(); })
+      .catch(function () { err.textContent = 'Could not save. Try again in a moment.'; })
+      .then(function () { saving = false; });
+  });
+
+  function setKind(k) {
+    kind = k;
+    document.getElementById('addForm').hidden = k !== 'task';
+    document.getElementById('meetForm').hidden = k !== 'meet';
+    document.getElementById('kTask').setAttribute('aria-pressed', String(k === 'task'));
+    document.getElementById('kMeet').setAttribute('aria-pressed', String(k === 'meet'));
+  }
+  document.getElementById('kTask').addEventListener('click', function () { setKind('task'); });
+  document.getElementById('kMeet').addEventListener('click', function () { setKind('meet'); });
+  var mForm = document.getElementById('meetForm'), mErr = document.getElementById('mErr'), mDate = document.getElementById('mDate');
+  mForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    mErr.textContent = '';
+    if (!db) { mErr.textContent = 'Saving is not available in this view.'; return; }
+    var w = document.getElementById('mWith').value.trim(), topic = document.getElementById('mTopic').value.trim();
+    var date = mDate.value, from = document.getElementById('mFrom').value, to = document.getElementById('mTo').value;
+    var place = document.getElementById('mPlace').value.trim();
+    if (!w) { mErr.textContent = 'Say who the meeting is with.'; return; }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) { mErr.textContent = 'Pick a date.'; return; }
+    if (date < today()) { mErr.textContent = 'The date is in the past.'; return; }
+    if (!/^\d{2}:\d{2}$/.test(from) || !/^\d{2}:\d{2}$/.test(to)) { mErr.textContent = 'Set both start and end time.'; return; }
+    if (to <= from) { mErr.textContent = 'The end must be after the start.'; return; }
+    if (saving) return;
+    if (editing && editing.kind === 'meet') {
+      saving = true;
+      db.collection('meetings').doc(editing.id).update({ person: w, topic: topic, date: date, start: from, end: to, place: place })
+        .then(function () { cancelEdit(); })
+        .catch(function () { mErr.textContent = 'Could not save. Check the rules (SETUP.md) and try again.'; })
+        .then(function () { saving = false; });
+      return;
+    }
+    saving = true;
+    var id = 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    db.collection('meetings').doc(id).set({ person: w, topic: topic, date: date, start: from, end: to, place: place, createdAt: Date.now() })
+      .then(function () { mForm.reset(); mDate.min = today(); })
+      .catch(function () { mErr.textContent = 'Could not save. Check the rules (SETUP.md).'; })
+      .then(function () { saving = false; });
+  });
+
+  function setView(v) { view = v; try { localStorage.setItem('lb-view', v); } catch (e) {} applyView(); }
+  document.getElementById('vSchedule').addEventListener('click', function () { setView('schedule'); });
+  document.getElementById('vMonth').addEventListener('click', function () { setView('month'); });
+  function shift(n) { var d = new Date(mY, mM + n, 1); mY = d.getFullYear(); mM = d.getMonth(); render(); }
+  document.getElementById('mPrev').addEventListener('click', function () { shift(-1); });
+  document.getElementById('mNext').addEventListener('click', function () { shift(1); });
+  document.getElementById('mToday').addEventListener('click', function () { var n = parse(today()); mY = n.getFullYear(); mM = n.getMonth(); selDay = today(); render(); });
+
+  render();
+  setInterval(function () { setMin(); render(); }, 60000);
+
+  document.getElementById('editCancel').addEventListener('click', cancelEdit);
+
+  // ---- Import ----
+  var iText = document.getElementById('iText'), iDay1 = document.getElementById('iDay1'), iMode = document.getElementById('iMode');
+  var iGo = document.getElementById('iGo'), iOut = document.getElementById('iOut'), iUndo = document.getElementById('iUndo');
+  var parsed = [];
+  function resolveDate(tok, day1) {
+    tok = tok.trim();
+    var m;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(tok)) return { date: tok };
+    if ((m = /^(\d{1,2})\.\s*(\d{1,2})\.\s*(\d{4})$/.exec(tok))) return { date: m[3] + '-' + pad(+m[2]) + '-' + pad(+m[1]) };
+    if ((m = /^day\s*(\d+)$/i.exec(tok))) {
+      if (!day1) return { error: 'Set the Day 1 date above' };
+      var d = parse(day1); d.setDate(d.getDate() + (+m[1]) - 1);
+      return { date: ymd(d) };
+    }
+    return { error: 'Unreadable date' };
+  }
+  function normTime(t) { var m = /^(\d{1,2}):(\d{2})$/.exec(t); return m ? pad(+m[1]) + ':' + m[2] : null; }
+  function parseList(text, day1, committed) {
+    var out = [], now = today();
+    text.split(/\r?\n/).forEach(function (line, i) {
+      if (!line.trim() || line.trim().charAt(0) === '#') return;
+      var parts = (line.indexOf('\t') >= 0 && line.indexOf(';') < 0 ? line.split('\t') : line.split(';')).map(function (p) { return p.trim(); });
+      var it = { line: i + 1, raw: line };
+      if (parts[0].toLowerCase() === 'meet') {
+        var r = resolveDate(parts[1] || '', day1);
+        var tm = /^(\d{1,2}:\d{2})\s*[-\u2013]\s*(\d{1,2}:\d{2})$/.exec(parts[2] || '');
+        it.kind = 'meet';
+        if (r.error) it.error = r.error;
+        else if (!tm) it.error = 'Time must look like 10:00-10:30';
+        else if (!parts[3]) it.error = 'Say who the meeting is with';
+        else {
+          it.date = r.date; it.start = normTime(tm[1]); it.end = normTime(tm[2]);
+          if (!it.start || !it.end || it.end <= it.start) it.error = 'End must be after start';
+          it.person = parts[3].slice(0, 120); it.topic = (parts[4] || '').slice(0, 120); it.place = (parts[5] || '').slice(0, 120);
+          it.title = it.person + (it.topic ? ' \u00b7 ' + it.topic : '');
+        }
+      } else {
+        var r2 = resolveDate(parts[0], day1);
+        it.kind = 'task';
+        if (r2.error) it.error = r2.error;
+        else if (!parts[1]) it.error = 'Title is missing';
+        else { it.date = r2.date; it.title = parts[1]; it.note = parts.slice(2).join('; ').trim(); }
+        if (!it.error && it.title.length > 120) { it.title = it.title.slice(0, 120); it.warn = 'Title shortened'; }
+        if (!it.error && it.note && it.note.length > 300) { it.note = it.note.slice(0, 299) + '\u2026'; it.warn = (it.warn ? it.warn + '; ' : '') + 'Note shortened'; }
+      }
+      if (!it.error && it.date < now) it.error = 'Date is in the past';
+      out.push(it);
+    });
+    return out;
+  }
+  function showPreview() {
+    parsed = parseList(iText.value, iDay1.value, iMode.value === 'committed');
+    iOut.innerHTML = '';
+    var ok = parsed.filter(function (p) { return !p.error; }).length, bad = parsed.length - ok;
+    iGo.disabled = !(db && ok);
+    iGo.textContent = ok ? 'Import ' + ok : 'Import';
+    if (!parsed.length) { iOut.appendChild(el('p', 'sum', 'Nothing to import yet.')); return; }
+    iOut.appendChild(el('p', 'sum', ok + ' ready' + (bad ? ', ' + bad + ' with problems (they will be skipped)' : '') + '.'));
+    var tb = document.createElement('table');
+    var hr = document.createElement('tr');
+    ['Line', 'Type', 'Date', 'Item', 'Check'].forEach(function (h) { hr.appendChild(el('th', null, h)); });
+    tb.appendChild(hr);
+    parsed.forEach(function (p) {
+      var tr = document.createElement('tr'); if (p.error) tr.className = 'bad';
+      [String(p.line), p.kind === 'meet' ? 'Meeting' : 'Task', p.date ? longDate(p.date) : '', p.title || p.raw.slice(0, 60), p.error || p.warn || 'ok'].forEach(function (c) { tr.appendChild(el('td', null, c)); });
+      tb.appendChild(tr);
+    });
+    iOut.appendChild(tb);
+  }
+  document.getElementById('iPreview').addEventListener('click', showPreview);
+  iGo.addEventListener('click', function () {
+    if (!db || saving) return;
+    var items = parsed.filter(function (p) { return !p.error; });
+    if (!items.length) return;
+    saving = true; iGo.disabled = true;
+    var batch = 'i' + Date.now().toString(36), committed = iMode.value === 'committed', ids = [], now = Date.now();
+    var jobs = items.map(function (p, i) {
+      var pre = p.kind === 'meet' ? 'm' : 't', id = pre + Date.now().toString(36) + i.toString(36) + Math.random().toString(36).slice(2, 5);
+      ids.push({ coll: p.kind === 'meet' ? 'meetings' : 'tasks', id: id });
+      var data = p.kind === 'meet'
+        ? { person: p.person, topic: p.topic, date: p.date, start: p.start, end: p.end, place: p.place, createdAt: now, batch: batch }
+        : { title: p.title, date: p.date, note: p.note || '', done: false, committed: committed, moves: 0, createdAt: now, batch: batch };
+      return db.collection(pre === 'm' ? 'meetings' : 'tasks').doc(id).set(data);
+    });
+    Promise.all(jobs).then(function () {
+      lastImport = { ids: ids, at: now };
+      iOut.innerHTML = ''; iOut.appendChild(el('p', 'sum', 'Imported ' + items.length + ' items' + (committed ? ' as committed.' : ' as planned.') + ' You can undo this for 15 minutes.'));
+      iUndo.hidden = false; iText.value = ''; parsed = []; iGo.textContent = 'Import';
+    }).catch(function () {
+      iOut.innerHTML = ''; iOut.appendChild(el('p', 'sum', 'Some items could not be saved. Check the rules (SETUP.md), then preview again. Items already saved stay; use Undo if needed.'));
+      lastImport = { ids: ids, at: now }; iUndo.hidden = false;
+    }).then(function () { saving = false; });
+  });
+  iUndo.addEventListener('click', function () {
+    if (!db || !lastImport) return;
+    if (Date.now() - lastImport.at > TYPO_MS) { iOut.innerHTML = ''; iOut.appendChild(el('p', 'sum', 'The 15 minutes for undoing have passed. Delete the items one by one.')); iUndo.hidden = true; return; }
+    var li = lastImport; lastImport = null; iUndo.hidden = true;
+    Promise.all(li.ids.map(function (x) { return db.collection(x.coll).doc(x.id).delete(); }))
+      .then(function () { iOut.innerHTML = ''; iOut.appendChild(el('p', 'sum', 'Import undone.')); })
+      .catch(function () { iOut.innerHTML = ''; iOut.appendChild(el('p', 'sum', 'Could not undo everything. Delete the rest by hand.')); });
+  });
+
+  window.FD = {
+    setDb: function (d) { db = d; document.getElementById('fSubmit').disabled = !d; if (!d) iGo.disabled = true; },
+    setTasks: function (list) { tasks = list.filter(function (v) { return v.title && v.date; }); render(); },
+    setMeetings: function (list) { meetings = list.filter(function (v) { return v.person && v.date && v.start && v.end; }); render(); },
+    setError: function (m) { err.textContent = m; document.getElementById('mErr').textContent = m; }
+  };
+})();
+</script>
+<script type="module">
+// 1. Paste your own Firebase web-app config here (see SETUP.md, step 5).
+const firebaseConfig = {
+  apiKey: "AIzaSyD2XGl6CU9rEt4NtPfR525npERSGuNUEkc",
+  authDomain: "fixed-dates-e4af7.firebaseapp.com",
+  projectId: "fixed-dates-e4af7",
+  appId: "1:270751718979:web:b7ea966dc385ffefd3fef6"
+};
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import { getFirestore, collection, doc, onSnapshot, setDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const fs = getFirestore(app);
+const gate = document.getElementById('gate');
+const appEl = document.getElementById('app');
+const gateErr = document.getElementById('gateErr');
+let unsub = null, unsubM = null;
+
+document.getElementById('signIn').addEventListener('click', async () => {
+  gateErr.textContent = '';
+  try { await signInWithPopup(auth, new GoogleAuthProvider()); }
+  catch (e) { gateErr.textContent = 'Sign-in failed. Check SETUP.md, step 4, and try again.'; }
+});
+document.getElementById('signOut').addEventListener('click', () => signOut(auth));
+
+onAuthStateChanged(auth, (user) => {
+  if (unsub) { unsub(); unsub = null; }
+  if (unsubM) { unsubM(); unsubM = null; }
+  if (!user) { gate.hidden = false; appEl.hidden = true; window.FD.setDb(null); return; }
+  gate.hidden = true; appEl.hidden = false;
+  window.FD.setDb({
+    collection: (name) => ({
+      doc: (id) => ({
+        set: (d) => setDoc(doc(fs, name, id), d),
+        update: (d) => updateDoc(doc(fs, name, id), d),
+        delete: () => deleteDoc(doc(fs, name, id))
+      })
+    })
+  });
+  unsub = onSnapshot(collection(fs, 'tasks'),
+    (snap) => window.FD.setTasks(snap.docs.map((d) => Object.assign({ id: d.id }, d.data()))),
+    (e) => window.FD.setError(e.code === 'permission-denied'
+      ? 'This Google account is not allowed to open the list. Check the email in firestore.rules.'
+      : 'Live updates stopped. Reload the page.'));
+  unsubM = onSnapshot(collection(fs, 'meetings'),
+    (snap) => window.FD.setMeetings(snap.docs.map((d) => Object.assign({ id: d.id }, d.data()))),
+    () => window.FD.setError('Meetings are not available yet. Publish the updated rules (SETUP.md, step 6).'));
+});
+</script>
+</body>
+</html>
